@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import requests
 import os
+import json
 
 app = Flask(__name__)
 
@@ -50,38 +51,19 @@ def group_by_sku(orders):
 
 def create_picks(token, group):
     headers = {"Authorization": f"Bearer {token}"}
-    body = {
-        "sales_orders": group,
+    data = {
+        "sales_orders": json.dumps(group),
         "orders_count": len(group),
-        "pickers": [],
-        "picking_orders": [],
-        "turbo_label": False
+        "turbo_label": "false"
     }
-    r = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
-        json=body,
+    r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
+        data=data,
         headers=headers)
-    return {"status": r.status_code, "response": r.json()}
+    return {"status": r.status_code, "response": r.text}
 
 @app.route("/ping", methods=["GET"])
 def ping():
     return jsonify({"status": "alive"})
-
-@app.route("/test", methods=["GET"])
-def test():
-    token = get_token()
-    orders = get_queue_orders(token)
-    # Teste mit fulfillment_order IDs
-    test_fo_ids = []
-    for o in orders[:4]:
-        fo = o.get("fulfillment_orders", [])
-        if fo:
-            test_fo_ids.append(fo[0]["id"])
-    headers = {"Authorization": f"Bearer {token}"}
-    r = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
-        json={"sales_orders": test_fo_ids, "orders_count": 4,
-              "pickers": [], "picking_orders": [], "turbo_label": False},
-        headers=headers)
-    return jsonify({"fo_ids_used": test_fo_ids, "status": r.status_code, "response": r.json()})
 
 @app.route("/run", methods=["POST", "GET"])
 def run():
