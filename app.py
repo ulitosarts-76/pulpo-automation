@@ -70,14 +70,18 @@ def ping():
 def test():
     token = get_token()
     orders = get_queue_orders(token)
-    # Teste mit ersten 4 frischen Aufträgen
-    test_ids = [o["id"] for o in orders[:4]]
+    # Teste mit fulfillment_order IDs
+    test_fo_ids = []
+    for o in orders[:4]:
+        fo = o.get("fulfillment_orders", [])
+        if fo:
+            test_fo_ids.append(fo[0]["id"])
     headers = {"Authorization": f"Bearer {token}"}
     r = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
-        json={"sales_orders": test_ids, "orders_count": 4,
+        json={"sales_orders": test_fo_ids, "orders_count": 4,
               "pickers": [], "picking_orders": [], "turbo_label": False},
         headers=headers)
-    return jsonify({"ids_used": test_ids, "status": r.status_code, "response": r.json()})
+    return jsonify({"fo_ids_used": test_fo_ids, "status": r.status_code, "response": r.json()})
 
 @app.route("/run", methods=["POST", "GET"])
 def run():
