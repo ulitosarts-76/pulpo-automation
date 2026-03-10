@@ -33,9 +33,7 @@ def group_by_sku(orders):
         key = (len(skus), skus)
         if key not in groups:
             groups[key] = []
-        fo_list = order.get("fulfillment_orders", [])
-        if fo_list:
-            groups[key].append(fo_list[0]["id"])
+        groups[key].append(order["id"])  # sales_order ID direkt!
 
     result = []
     for key, ids in sorted(groups.items()):
@@ -48,7 +46,7 @@ def group_by_sku(orders):
             else:
                 result.append(batch)
     return result
-
+    
 def create_picks(token, group):
     headers = {"Authorization": f"Bearer {token}"}
     body = {
