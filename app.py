@@ -1,13 +1,12 @@
 from flask import Flask, jsonify
 import requests
+import os
 
 app = Flask(__name__)
 
 PULPO_BASE_URL = "https://eu.pulpo.co/api/v1"
 USERNAME = "tier123_ma01"
 PASSWORD = "Start123!"
-MIN_GROUP_SIZE = 4
-MAX_GROUP_SIZE = 16
 
 def get_token():
     r = requests.post(f"{PULPO_BASE_URL}/auth", json={
@@ -25,42 +24,6 @@ def get_queue_orders(token):
         headers=headers)
     return r.json().get("sales_orders", [])
 
-def group_by_sku(orders):
-    groups = {}
-    for order in orders:
-        items = order.get("items", [])
-        skus = tuple(sorted([str(i.get("product_id","")) for i in items]))
-        key = (len(skus), skus)
-        if key not in groups:
-            groups[key] = []
-        groups[key].append(order["id"])  # sales_order ID direkt!
-
-    result = []
-    for key, ids in sorted(groups.items()):
-        for i in range(0, len(ids), MAX_GROUP_SIZE):
-            batch = ids[i:i+MAX_GROUP_SIZE]
-            if len(batch) >= MIN_GROUP_SIZE:
-                result.append(batch)
-            elif result:
-                result[-1].extend(batch)
-            else:
-                result.append(batch)
-    return result
-    
-def create_picks(token, group):
-    headers = {"Authorization": f"Bearer {token}"}
-    body = {
-        "sales_orders": group,
-        "orders_count": len(group),
-        "pickers": [],
-        "picking_orders": [],
-        "turbo_label": False
-    }
-    r = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
-        json=body,
-        headers=headers)
-    return {"status": r.status_code, "response": r.json()}
-
 @app.route("/ping", methods=["GET"])
 def ping():
     return jsonify({"status": "alive"})
@@ -69,14 +32,27 @@ def ping():
 def run():
     token = get_token()
     orders = get_queue_orders(token)
-    groups = group_by_sku(orders)
-    results = []
-    for g in groups:
-        status = create_picks(token, g)
-        results.append({"count": len(g), "result": status})
-    return jsonify({"total_orders": len(orders), "groups": len(groups), "details": results})
-
-import os
+    
+    test_orders = orders[:4]
+    sales_ids = [o["id"] for o in test_orders]
+    fo_ids = [o["fulfillment_orders"][0]["id"] for o in test_orders if o.get("fulfillment_orders")]
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    r1 = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
+        json={"sales_orders": sales_ids, "orders_count": 4, "pickers": [], "picking_orders": [], "turbo_label": False},
+        headers=headers)
+    
+    r2 = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
+        json={"sales_orders": fo_ids, "orders_count": 4, "pickers": [], "picking_orders": [], "turbo_label": False},
+        headers=headers)
+    
+    return jsonify({
+        "sales_ids": sales_ids,
+        "fo_ids": fo_ids,
+        "test1_sales": {"status": r1.status_code, "response": r1.json()},
+        "test2_fo": {"status": r2.status_code, "response": r2.json()}
+    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
