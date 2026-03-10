@@ -52,11 +52,17 @@ def group_by_sku(orders):
 
 def create_picks(token, group):
     headers = {"Authorization": f"Bearer {token}"}
+    body = {
+        "sales_orders": group,
+        "orders_count": len(group),
+        "pickers": [],
+        "picking_orders": [],
+        "turbo_label": False
+    }
     r = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
-        json={"sales_orders": group, "orders_count": len(group),
-              "pickers": [], "turbo_label": False},
+        json=body,
         headers=headers)
-    return r.status_code
+    return {"status": r.status_code, "response": r.json()}
 
 @app.route("/ping", methods=["GET"])
 def ping():
@@ -70,7 +76,7 @@ def run():
     results = []
     for g in groups:
         status = create_picks(token, g)
-        results.append({"count": len(g), "ids": g, "status": status})
+        results.append({"count": len(g), "result": status})
     return jsonify({"total_orders": len(orders), "groups": len(groups), "details": results})
 
 if __name__ == "__main__":
