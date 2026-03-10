@@ -33,7 +33,6 @@ def group_by_sku(orders):
         key = (len(skus), skus)
         if key not in groups:
             groups[key] = []
-        # Fulfillment order ID verwenden!
         fo_list = order.get("fulfillment_orders", [])
         if fo_list:
             groups[key].append(fo_list[0]["id"])
