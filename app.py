@@ -53,6 +53,8 @@ def create_picks(token, group):
     headers = {"Authorization": f"Bearer {token}"}
     data = {
         "sales_orders": json.dumps(group),
+        "picking_orders": json.dumps([]),
+        "fulfillment_orders": json.dumps([]),
         "orders_count": len(group),
         "turbo_label": "false"
     }
