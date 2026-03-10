@@ -24,7 +24,8 @@ def get_queue_orders(token):
     r = requests.get(f"{PULPO_BASE_URL}/sales/orders",
         params={"state": "queue", "limit": 200},
         headers=headers)
-    return r.json().get("sales_orders", [])
+    data = r.json()
+    return data.get("sales_orders", data.get("results", []))
 
 def group_orders(orders):
     groups = defaultdict(list)
@@ -34,27 +35,27 @@ def group_orders(orders):
         if not items:
             continue
 
-        # Multi-SKU Aufträge ignorieren
-        product_ids = set(str(i.get("product_id", "")) for i in items)
+        # Multi-SKU ignorieren
+        product_ids = list(set(str(i.get("product_id", "")) for i in items))
         if len(product_ids) > 1:
             continue
 
-        # Single-SKU: SKU + Menge als Schlüssel
-        sku = list(product_ids)[0]
-        menge = sum(i.get("quantity", 1) for i in items)
+        sku = product_ids[0]
+        menge = int(sum(float(i.get("quantity", 1)) for i in items))
         key = (sku, menge)
         groups[key].append(order["id"])
 
-    # Sortiere: meiste Aufträge zuerst, dann nach SKU, dann nach Menge
-    sorted_groups = sorted(groups.items(), 
-        key=lambda x: (-len(x[1]), x[0][0], x[0][1]))
+    # Sortiere: meiste Aufträge zuerst
+    sorted_groups = sorted(groups.items(),
+        key=lambda x: -len(x[1]))
 
     result = []
     for (sku, menge), ids in sorted_groups:
         if len(ids) < MIN_GROUP_SIZE:
             continue
+        # Aufteilen in Batches à MAX_GROUP_SIZE
         for i in range(0, len(ids), MAX_GROUP_SIZE):
-            batch = ids[i:i+MAX_GROUP_SIZE]
+            batch = ids[i:i + MAX_GROUP_SIZE]
             if len(batch) >= MIN_GROUP_SIZE:
                 result.append({
                     "sku": sku,
@@ -64,17 +65,17 @@ def group_orders(orders):
 
     return result
 
-def create_picks(token, group):
+def create_pick(token, group):
     headers = {"Authorization": f"Bearer {token}"}
+    body = {
+        "sales_orders": group["ids"],
+        "orders_count": len(group["ids"]),
+        "pickers": [],
+        "turbo_label": False
+    }
     r = requests.post(f"{PULPO_BASE_URL}/picking/bulk/orders",
-        json={
-            "sales_orders": group["ids"],
-            "orders_count": len(group["ids"]),
-            "pickers": [],
-            "turbo_label": False
-        },
-        headers=headers)
-    return r.status_code
+        json=body, headers=headers)
+    return r.status_code, r.text
 
 @app.route("/run", methods=["POST", "GET"])
 def run():
@@ -84,19 +85,19 @@ def run():
 
     results = []
     for g in groups:
-        status = create_picks(token, g)
+        status, response = create_pick(token, g)
         results.append({
             "sku": g["sku"],
             "menge": g["menge"],
-            "count": len(g["ids"]),
-            "status": status
+            "orders_in_group": len(g["ids"]),
+            "http_status": status,
+            "response": response
         })
 
     return jsonify({
-        "total_orders": len(orders),
+        "total_orders_in_queue": len(orders),
         "groups_created": len(results),
-        "details": results,
-        "message": f"{len(results)} Pick-Gruppen erstellt"
+        "details": results
     })
 
 if __name__ == "__main__":
