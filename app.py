@@ -33,9 +33,15 @@ def run():
     token = get_token()
     orders = get_queue_orders(token)
     
-    test_orders = orders[:4]
-    sales_ids = [o["id"] for o in test_orders]
-    fo_ids = [o["fulfillment_orders"][0]["id"] for o in test_orders if o.get("fulfillment_orders")]
+    sample = []
+    for o in orders[:5]:
+        sample.append({
+            "order_num": o["order_num"],
+            "id": o["id"],
+            "fulfillment_orders": o.get("fulfillment_orders", [])
+        })
+    
+    return jsonify({"total": len(orders), "sample": sample})
     
     headers = {"Authorization": f"Bearer {token}"}
     
