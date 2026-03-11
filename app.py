@@ -1,7 +1,6 @@
 from flask import Flask, jsonify
 import requests
 import os
-import json
 
 app = Flask(__name__)
 
@@ -35,7 +34,9 @@ def group_by_sku(orders):
         key = (len(skus), skus)
         if key not in groups:
             groups[key] = []
-        groups[key].append(order["id"])
+        fo_list = order.get("fulfillment_orders", [])
+        if fo_list:
+            groups[key].append(fo_list[0]["id"])
 
     result = []
     for key, ids in sorted(groups.items()):
@@ -50,16 +51,19 @@ def group_by_sku(orders):
     return result
 
 def create_picks(token, group):
-    headers = {"Authorization": f"Bearer {token}"}
-    data = {
-        "sales_orders": json.dumps(group),
-        "picking_orders": json.dumps([]),
-        "fulfillment_orders": json.dumps([]),
-        "orders_count": len(group),
-        "turbo_label": "false"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    body = {
+        "fulfillment_orders": group,
+        "cart": False,
+        "notes": "",
+        "delete_missing_stock_sales_items": False,
+        "pickers": []
     }
     r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-        data=data,
+        json=body,
         headers=headers)
     return {"status": r.status_code, "response": r.text}
 
