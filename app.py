@@ -28,16 +28,12 @@ def get_queue_orders(token):
 
 def group_by_sku(orders):
     # Nur Aufträge mit genau 1 SKU
-    single_sku_orders = []
+    sku_groups = {}
     for order in orders:
         items = order.get("items", [])
-        if len(items) == 1:  # genau 1 SKU
-            single_sku_orders.append(order)
-
-    # Gruppieren nach SKU (product_id)
-    sku_groups = {}
-    for order in single_sku_orders:
-        item = order["items"][0]
+        if len(items) != 1:
+            continue
+        item = items[0]
         product_id = str(item.get("product_id", ""))
         quantity = item.get("quantity", 1)
         fo_list = order.get("fulfillment_orders", [])
@@ -52,25 +48,42 @@ def group_by_sku(orders):
             "quantity": quantity
         })
 
-    # Innerhalb jeder SKU nach Menge sortieren (1, 2, 3, 4...)
     result = []
+
     for product_id, entries in sku_groups.items():
-        # Sortieren nach Menge aufsteigend
-        entries.sort(key=lambda x: x["quantity"])
+        used_fo_ids = set()
 
-        # Nur fo_ids extrahieren
-        fo_ids = [e["fo_id"] for e in entries]
+        # Schritt 1: Mengenfilter 1-20 einzeln
+        for menge in range(1, 21):
+            batch_ids = [
+                e["fo_id"] for e in entries
+                if e["quantity"] == menge and e["fo_id"] not in used_fo_ids
+            ]
 
-        # Mindestens 4 Aufträge nötig
-        if len(fo_ids) < MIN_GROUP_SIZE:
-            continue  # nicht anfassen!
+            if len(batch_ids) < MIN_GROUP_SIZE:
+                continue  # nicht anfassen
 
-        # Batches à max 16 bilden
-        for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
-            batch = fo_ids[i:i+MAX_GROUP_SIZE]
+            # Batches à max 16
+            for i in range(0, len(batch_ids), MAX_GROUP_SIZE):
+                batch = batch_ids[i:i+MAX_GROUP_SIZE]
+                if len(batch) >= MIN_GROUP_SIZE:
+                    result.append(batch)
+                    for fo_id in batch:
+                        used_fo_ids.add(fo_id)
+
+        # Schritt 2: Rest ohne Mengenfilter
+        remaining = [
+            e["fo_id"] for e in entries
+            if e["fo_id"] not in used_fo_ids
+        ]
+
+        if len(remaining) < MIN_GROUP_SIZE:
+            continue  # nicht anfassen
+
+        for i in range(0, len(remaining), MAX_GROUP_SIZE):
+            batch = remaining[i:i+MAX_GROUP_SIZE]
             if len(batch) >= MIN_GROUP_SIZE:
                 result.append(batch)
-            # Rest unter 4 → nicht anfassen
 
     return result
 
