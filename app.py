@@ -27,27 +27,51 @@ def get_queue_orders(token):
     return r.json().get("sales_orders", [])
 
 def group_by_sku(orders):
-    groups = {}
+    # Nur Aufträge mit genau 1 SKU
+    single_sku_orders = []
     for order in orders:
         items = order.get("items", [])
-        skus = tuple(sorted([str(i.get("product_id","")) for i in items]))
-        key = (len(skus), skus)
-        if key not in groups:
-            groups[key] = []
-        fo_list = order.get("fulfillment_orders", [])
-        if fo_list:
-            groups[key].append(fo_list[0]["id"])
+        if len(items) == 1:  # genau 1 SKU
+            single_sku_orders.append(order)
 
+    # Gruppieren nach SKU (product_id)
+    sku_groups = {}
+    for order in single_sku_orders:
+        item = order["items"][0]
+        product_id = str(item.get("product_id", ""))
+        quantity = item.get("quantity", 1)
+        fo_list = order.get("fulfillment_orders", [])
+        if not fo_list:
+            continue
+        fo_id = fo_list[0]["id"]
+
+        if product_id not in sku_groups:
+            sku_groups[product_id] = []
+        sku_groups[product_id].append({
+            "fo_id": fo_id,
+            "quantity": quantity
+        })
+
+    # Innerhalb jeder SKU nach Menge sortieren (1, 2, 3, 4...)
     result = []
-    for key, ids in sorted(groups.items()):
-        for i in range(0, len(ids), MAX_GROUP_SIZE):
-            batch = ids[i:i+MAX_GROUP_SIZE]
+    for product_id, entries in sku_groups.items():
+        # Sortieren nach Menge aufsteigend
+        entries.sort(key=lambda x: x["quantity"])
+
+        # Nur fo_ids extrahieren
+        fo_ids = [e["fo_id"] for e in entries]
+
+        # Mindestens 4 Aufträge nötig
+        if len(fo_ids) < MIN_GROUP_SIZE:
+            continue  # nicht anfassen!
+
+        # Batches à max 16 bilden
+        for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
+            batch = fo_ids[i:i+MAX_GROUP_SIZE]
             if len(batch) >= MIN_GROUP_SIZE:
                 result.append(batch)
-            elif result:
-                result[-1].extend(batch)
-            else:
-                result.append(batch)
+            # Rest unter 4 → nicht anfassen
+
     return result
 
 def create_picks(token, group):
@@ -65,7 +89,7 @@ def create_picks(token, group):
     r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
         json=body,
         headers=headers)
-    return {"status": r.status_code, "response": r.text}
+    return {"status": r.status_code, "response": r.json()}
 
 @app.route("/ping", methods=["GET"])
 def ping():
@@ -80,7 +104,11 @@ def run():
     for g in groups:
         status = create_picks(token, g)
         results.append({"count": len(g), "result": status})
-    return jsonify({"total_orders": len(orders), "groups": len(groups), "details": results})
+    return jsonify({
+        "total_orders": len(orders),
+        "groups_created": len(groups),
+        "details": results
+    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
