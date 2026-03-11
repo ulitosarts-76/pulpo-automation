@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulpo Pick Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #2a2a3a;
+    --accent1: #ff6b35;
+    --accent2: #4ecdc4;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 20px;
+    background-image: radial-gradient(ellipse at 20% 50%, #1a1a2e 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, #0d1b2a 0%, transparent 50%);
+  }
+
+  header {
+    text-align: center;
+    padding: 40px 0 50px;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 700px;
+    margin: 0 auto 30px;
+  }
+
+  @media (max-width: 500px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-1 { border-top: 3px solid var(--accent1); }
+  .btn-2 { border-top: 3px solid var(--accent2); }
+
+  .btn:hover {
+    border-color: var(--border);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+
+  .btn-1:hover { box-shadow: 0 8px 30px rgba(255,107,53,0.15); }
+  .btn-2:hover { box-shadow: 0 8px 30px rgba(78,205,196,0.15); }
+
+  .btn-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .btn-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .btn-1 .btn-title { color: var(--accent1); }
+  .btn-2 .btn-title { color: var(--accent2); }
+
+  .btn-desc {
+    color: var(--muted);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+
+  .btn.loading { opacity: 0.6; pointer-events: none; }
+
+  .spinner {
+    display: none;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent1);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 10px auto 0;
+  }
+
+  .btn.loading .spinner { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result-box {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .result-box.visible { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .result-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .result-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #2ecc71;
+  }
+
+  .result-header .dot.error { background: #e74c3c; }
+
+  .result-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .result-summary {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent1);
+  }
+
+  .stat-num.green { color: var(--accent2); }
+
+  .stat-label {
+    color: var(--muted);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .result-details {
+    padding: 16px 20px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .pick-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+  }
+
+  .pick-item:last-child { border-bottom: none; }
+
+  .pick-badge {
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.65rem;
+    color: var(--accent2);
+    border: 1px solid var(--border);
+  }
+
+  .error-msg {
+    padding: 20px;
+    color: #e74c3c;
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .timestamp {
+    padding: 10px 20px;
+    color: var(--muted);
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PULPO PICKS</h1>
+  <p>Pick Manager · Tier123</p>
+</header>
+
+<div class="grid">
+  <button class="btn btn-1" id="btn1" onclick="triggerPick(1)">
+    <div class="btn-icon">📦</div>
+    <div class="btn-title">SKU-PICKS</div>
+    <div class="btn-desc">Nach SKU gruppiert<br>Min 4 · Max 16</div>
+    <div class="spinner"></div>
+  </button>
+
+  <button class="btn btn-2" id="btn2" onclick="triggerPick(2)">
+    <div class="btn-icon">🏷️</div>
+    <div class="btn-title">TAG-PICKS</div>
+    <div class="btn-desc">Nach Kategorie gruppiert<br>Min 4 · Max 8</div>
+    <div class="spinner"></div>
+  </button>
+</div>
+
+<div class="result-box" id="resultBox">
+  <div class="result-header">
+    <div class="dot" id="resultDot"></div>
+    <div class="result-title" id="resultTitle"></div>
+  </div>
+  <div class="result-summary" id="resultSummary"></div>
+  <div class="result-details" id="resultDetails"></div>
+  <div class="timestamp" id="resultTime"></div>
+</div>
+
+<script>
+  const WEBHOOK_1 = 'https://hook.eu1.make.com/x42t18b7n16jx452mckar5wnmdm3cdko';
+  const WEBHOOK_2 = 'https://hook.eu1.make.com/121b1b99u5f7d96na5lshcpmydju5dgj';
+  const SERVER_1 = 'https://pulpo-automation.onrender.com/run';
+  const SERVER_2 = 'https://pulpo-automation-2.onrender.com/run';
+
+  async function triggerPick(type) {
+    const btn = document.getElementById('btn' + type);
+    const url = type === 1 ? SERVER_1 : SERVER_2;
+    const label = type === 1 ? 'SKU-PICKS' : 'TAG-PICKS';
+
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      showResult(data, label, type);
+    } catch(e) {
+      showError(label, e.message);
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  function showResult(data, label, type) {
+    const box = document.getElementById('resultBox');
+    const dot = document.getElementById('resultDot');
+    const title = document.getElementById('resultTitle');
+    const summary = document.getElementById('resultSummary');
+    const details = document.getElementById('resultDetails');
+    const time = document.getElementById('resultTime');
+
+    dot.className = 'dot';
+    title.textContent = label + ' — ERGEBNIS';
+
+    const color = type === 1 ? '' : 'green';
+    summary.innerHTML = `
+      <div class="stat">
+        <div class="stat-num ${color}">${data.groups_created || 0}</div>
+        <div class="stat-label">Pick-Aufträge erstellt</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">${data.total_orders || 0}</div>
+        <div class="stat-label">Aufträge in Queue</div>
+      </div>
+    `;
+
+    if (data.details && data.details.length > 0) {
+      details.innerHTML = data.details.map((d, i) => `
+        <div class="pick-item">
+          <span>Pick ${i+1} ${d.tag ? '· ' + d.tag : ''}</span>
+          <span class="pick-badge">${d.count} Aufträge</span>
+        </div>
+      `).join('');
+    } else {
+      details.innerHTML = '<div class="pick-item" style="color:var(--muted)">Keine Picks erstellt – zu wenig Aufträge</div>';
+    }
+
+    time.textContent = '⏱ ' + new Date().toLocaleString('de-DE');
+    box.className = 'result-box visible';
+  }
+
+  function showError(label, msg) {
+    const box = document.getElementById('resultBox');
+    document.getElementById('resultDot').className = 'dot error';
+    document.getElementById('resultTitle').textContent = label + ' — FEHLER';
+    document.getElementById('resultSummary').innerHTML = '';
+    document.getElementById('resultDetails').innerHTML = `<div class="error-msg">⚠️ ${msg}</div>`;
+    document.getElementById('resultTime').textContent = '⏱ ' + new Date().toLocaleString('de-DE');
+    box.className = 'result-box visible';
+  }
+</script>
+
+</body>
+</html>
