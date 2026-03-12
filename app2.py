@@ -11,6 +11,7 @@ USERNAME = "tier123_ma01"
 PASSWORD = "Start123!"
 MIN_GROUP_SIZE = 4
 MAX_GROUP_SIZE = 8
+ALL_IN_THRESHOLD = 10  # <= 10 Aufträge → alle in einen Pick
 
 VALID_TAGS = ["L1-2", "L1-3", "L1-3-1", "L1-4", "L1-5", "L1-L4", "L2-1"]
 
@@ -76,16 +77,21 @@ def group_by_tag(orders):
             tag_groups[tag] = []
         tag_groups[tag].append(fo_id)
 
-    # Batches à max 8, minimum 4
+    # Batches bilden
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
-            continue
+            continue  # unter 4 → nicht anfassen
 
-        for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
-            batch = fo_ids[i:i+MAX_GROUP_SIZE]
-            if len(batch) >= MIN_GROUP_SIZE:
-                result.append({"tag": tag, "fo_ids": batch})
+        if len(fo_ids) <= ALL_IN_THRESHOLD:
+            # <= 10 Aufträge → alle in einen Pick
+            result.append({"tag": tag, "fo_ids": fo_ids})
+        else:
+            # > 10 Aufträge → Batches à max 8
+            for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
+                batch = fo_ids[i:i+MAX_GROUP_SIZE]
+                if len(batch) >= MIN_GROUP_SIZE:
+                    result.append({"tag": tag, "fo_ids": batch})
 
     # Größte Gruppen zuerst
     result.sort(key=lambda x: len(x["fo_ids"]), reverse=True)
