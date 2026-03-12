@@ -1,8 +1,10 @@
 from flask import Flask, jsonify
 import requests
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 PULPO_BASE_URL = "https://eu.pulpo.co/api/v1"
 USERNAME = "tier123_ma01"
@@ -61,9 +63,8 @@ def group_by_sku(orders):
             ]
 
             if len(batch_ids) < MIN_GROUP_SIZE:
-                continue  # nicht anfassen
+                continue
 
-            # Batches à max 16
             for i in range(0, len(batch_ids), MAX_GROUP_SIZE):
                 batch = batch_ids[i:i+MAX_GROUP_SIZE]
                 if len(batch) >= MIN_GROUP_SIZE:
@@ -78,13 +79,15 @@ def group_by_sku(orders):
         ]
 
         if len(remaining) < MIN_GROUP_SIZE:
-            continue  # nicht anfassen
+            continue
 
         for i in range(0, len(remaining), MAX_GROUP_SIZE):
             batch = remaining[i:i+MAX_GROUP_SIZE]
             if len(batch) >= MIN_GROUP_SIZE:
                 result.append(batch)
 
+    # Größte Gruppen zuerst
+    result.sort(key=lambda x: len(x), reverse=True)
     return result
 
 def create_picks(token, group):
@@ -126,3 +129,11 @@ def run():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+```
+
+Und `requirements.txt` nicht vergessen:
+```
+flask
+requests
+gunicorn
+flask-cors
