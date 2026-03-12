@@ -11,7 +11,7 @@ USERNAME = "tier123_ma01"
 PASSWORD = "Start123!"
 MIN_GROUP_SIZE = 4
 MAX_GROUP_SIZE = 8
-ALL_IN_THRESHOLD = 10  # <= 10 Aufträge → alle in einen Pick
+ALL_IN_THRESHOLD = 10
 
 VALID_TAGS = ["L1-2", "L1-3", "L1-3-1", "L1-4", "L1-5", "L1-L4", "L2-1"]
 
@@ -27,7 +27,10 @@ def get_token():
 def get_queue_orders(token):
     headers = {"Authorization": f"Bearer {token}"}
     r = requests.get(f"{PULPO_BASE_URL}/sales/orders",
-        params={"state": "queue", "limit": 200},
+        params={
+            "state": "queue",
+            "limit": 200
+        },
         headers=headers)
     return r.json().get("sales_orders", [])
 
@@ -35,8 +38,13 @@ def get_tag(order):
     items = order.get("items", [])
     if not items:
         return None
-    product = items[0].get("product", {})
+    item = items[0]
+    # Erst in item.product schauen
+    product = item.get("product", {})
     categories = product.get("product_categories", [])
+    # Falls leer, direkt in item schauen
+    if not categories:
+        categories = item.get("product_categories", [])
     for cat in categories:
         code = cat.get("code", "")
         if code in VALID_TAGS:
@@ -81,13 +89,11 @@ def group_by_tag(orders):
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
-            continue  # unter 4 → nicht anfassen
+            continue
 
         if len(fo_ids) <= ALL_IN_THRESHOLD:
-            # <= 10 Aufträge → alle in einen Pick
             result.append({"tag": tag, "fo_ids": fo_ids})
         else:
-            # > 10 Aufträge → Batches à max 8
             for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
                 batch = fo_ids[i:i+MAX_GROUP_SIZE]
                 if len(batch) >= MIN_GROUP_SIZE:
@@ -117,6 +123,29 @@ def create_picks(token, group):
 @app.route("/ping", methods=["GET"])
 def ping():
     return jsonify({"status": "alive"})
+
+@app.route("/debug", methods=["GET"])
+def debug():
+    token = get_token()
+    orders = get_queue_orders(token)
+    single_sku = []
+    for order in orders:
+        items = order.get("items", [])
+        if len(items) != 1:
+            continue
+        fo_list = order.get("fulfillment_orders", [])
+        if not fo_list:
+            continue
+        tag = get_tag(order)
+        product = items[0].get("product", {})
+        single_sku.append({
+            "order_num": order.get("order_num"),
+            "product_id": items[0].get("product_id"),
+            "sku": product.get("sku"),
+            "tag": tag,
+            "categories": product.get("product_categories", [])
+        })
+    return jsonify({"total": len(single_sku), "orders": single_sku[:20]})
 
 @app.route("/run", methods=["POST", "GET"])
 def run():
