@@ -1,8 +1,10 @@
 from flask import Flask, jsonify
 import requests
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 PULPO_BASE_URL = "https://eu.pulpo.co/api/v1"
 USERNAME = "tier123_ma01"
@@ -10,7 +12,6 @@ PASSWORD = "Start123!"
 MIN_GROUP_SIZE = 4
 MAX_GROUP_SIZE = 8
 
-# Tags die als Gruppierungsschlüssel verwendet werden
 VALID_TAGS = ["L1-2", "L1-3", "L1-3-1", "L1-4", "L1-5", "L1-L4", "L2-1"]
 
 def get_token():
@@ -30,7 +31,6 @@ def get_queue_orders(token):
     return r.json().get("sales_orders", [])
 
 def get_tag(order):
-    """Gibt den ersten gültigen Tag des Produkts zurück"""
     items = order.get("items", [])
     if not items:
         return None
@@ -60,16 +60,16 @@ def group_by_tag(orders):
         product_id = str(order["items"][0].get("product_id", ""))
         sku_count[product_id] = sku_count.get(product_id, 0) + 1
 
-    # Nur SKUs mit weniger als 4 Aufträgen (Rest vom ersten Webhook)
+    # Nur SKUs mit weniger als 4 Aufträgen
     tag_groups = {}
     for order in single_sku_orders:
         product_id = str(order["items"][0].get("product_id", ""))
         if sku_count[product_id] >= 4:
-            continue  # wurde vom ersten Webhook verarbeitet
+            continue
 
         tag = get_tag(order)
         if not tag:
-            continue  # kein gültiger Tag → nicht anfassen
+            continue
 
         fo_id = order["fulfillment_orders"][0]["id"]
         if tag not in tag_groups:
@@ -80,13 +80,15 @@ def group_by_tag(orders):
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
-            continue  # nicht anfassen
+            continue
 
         for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
             batch = fo_ids[i:i+MAX_GROUP_SIZE]
             if len(batch) >= MIN_GROUP_SIZE:
                 result.append({"tag": tag, "fo_ids": batch})
 
+    # Größte Gruppen zuerst
+    result.sort(key=lambda x: len(x["fo_ids"]), reverse=True)
     return result
 
 def create_picks(token, group):
@@ -130,4 +132,5 @@ def run():
     })
 
 if __name__ == "__main__":
-    port = int
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
