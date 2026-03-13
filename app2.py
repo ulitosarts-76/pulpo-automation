@@ -13,7 +13,7 @@ MIN_GROUP_SIZE = 4
 MAX_GROUP_SIZE = 8
 ALL_IN_THRESHOLD = 10
 
-VALID_TAGS = ["L1-2", "L1-3", "L1-3-1", "L1-4", "L1-5", "L1-L4", "L2-1"]
+VALID_TAGS = ["L1-2", "L1-3", "L1-3-1", "L1-4", "L1-5", "L1-L4", "L1-L5", "L2-1"]
 
 def get_token():
     r = requests.post(f"{PULPO_BASE_URL}/auth", json={
@@ -39,10 +39,8 @@ def get_tag(order):
     if not items:
         return None
     item = items[0]
-    # Erst in item.product schauen
     product = item.get("product", {})
     categories = product.get("product_categories", [])
-    # Falls leer, direkt in item schauen
     if not categories:
         categories = item.get("product_categories", [])
     for cat in categories:
@@ -52,7 +50,6 @@ def get_tag(order):
     return None
 
 def group_by_tag(orders):
-    # Nur 1-SKU Aufträge
     single_sku_orders = []
     for order in orders:
         items = order.get("items", [])
@@ -63,13 +60,11 @@ def group_by_tag(orders):
             continue
         single_sku_orders.append(order)
 
-    # Zähle Aufträge pro SKU
     sku_count = {}
     for order in single_sku_orders:
         product_id = str(order["items"][0].get("product_id", ""))
         sku_count[product_id] = sku_count.get(product_id, 0) + 1
 
-    # Nur SKUs mit weniger als 4 Aufträgen
     tag_groups = {}
     for order in single_sku_orders:
         product_id = str(order["items"][0].get("product_id", ""))
@@ -85,7 +80,6 @@ def group_by_tag(orders):
             tag_groups[tag] = []
         tag_groups[tag].append(fo_id)
 
-    # Batches bilden
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
@@ -99,7 +93,6 @@ def group_by_tag(orders):
                 if len(batch) >= MIN_GROUP_SIZE:
                     result.append({"tag": tag, "fo_ids": batch})
 
-    # Größte Gruppen zuerst
     result.sort(key=lambda x: len(x["fo_ids"]), reverse=True)
     return result
 
