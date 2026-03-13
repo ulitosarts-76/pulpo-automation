@@ -32,19 +32,9 @@
                       radial-gradient(ellipse at 80% 20%, #0d1b2a 0%, transparent 50%);
   }
 
-  header {
-    text-align: center;
-    padding: 30px 0 36px;
-  }
-
+  header { text-align: center; padding: 30px 0 36px; }
   .logo-wrap { margin-bottom: 14px; }
-
-  .logo-wrap img {
-    height: 48px;
-    object-fit: contain;
-    filter: brightness(1.1);
-  }
-
+  .logo-wrap img { height: 48px; object-fit: contain; filter: brightness(1.1); }
   .logo-fallback {
     font-family: 'Syne', sans-serif;
     font-size: 1.4rem;
@@ -65,13 +55,7 @@
     line-height: 1;
   }
 
-  header p {
-    color: var(--muted);
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 8px;
-  }
+  header p { color: var(--muted); font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; }
 
   .status-bar {
     max-width: 700px;
@@ -98,13 +82,7 @@
     letter-spacing: 1px;
   }
 
-  .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-  }
-
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .dot.offline { background: var(--red); }
   .dot.checking { background: var(--yellow); animation: pulse 1s infinite; }
@@ -146,7 +124,6 @@
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
-    position: relative;
     overflow: hidden;
   }
 
@@ -162,19 +139,12 @@
 
   .btn-icon { font-size: 1.8rem; margin-bottom: 10px; }
 
-  .btn-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 5px;
-  }
-
+  .btn-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; }
   .btn-1 .btn-title { color: var(--accent1); }
   .btn-2 .btn-title { color: var(--accent2); }
   .btn-3 .btn-title { color: var(--accent3); }
 
   .btn-desc { color: var(--muted); font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.6; }
-
   .btn.loading { opacity: 0.6; pointer-events: none; }
 
   .spinner {
@@ -222,11 +192,9 @@
   }
 
   .stat { background: var(--bg); border-radius: 10px; padding: 12px; text-align: center; }
-
   .stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--accent1); }
   .stat-num.c2 { color: var(--accent2); }
   .stat-num.c3 { color: var(--accent3); }
-
   .stat-label { color: var(--muted); font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
   .result-details { padding: 14px 18px; max-height: 280px; overflow-y: auto; }
@@ -252,25 +220,11 @@
   }
 
   .error-msg { padding: 18px; color: var(--red); font-size: 0.72rem; line-height: 1.6; }
-  .wake-result { padding: 14px 18px; font-size: 0.7rem; line-height: 1.8; color: var(--text); }
+  .wake-result { padding: 14px 18px; font-size: 0.7rem; line-height: 2; color: var(--text); }
 
-  .timestamp {
-    padding: 9px 18px;
-    color: var(--muted);
-    font-size: 0.58rem;
-    letter-spacing: 1px;
-    border-top: 1px solid var(--border);
-  }
+  .timestamp { padding: 9px 18px; color: var(--muted); font-size: 0.58rem; letter-spacing: 1px; border-top: 1px solid var(--border); }
 
-  footer {
-    text-align: center;
-    margin-top: 40px;
-    color: var(--muted);
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
+  footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; }
   footer span { color: var(--accent1); }
 </style>
 </head>
@@ -289,9 +243,9 @@
 
 <div class="status-bar">
   <div class="status-servers">
-    <div class="server-dot"><div class="dot checking" id="dot1"></div><span>SKU-Server</span></div>
-    <div class="server-dot"><div class="dot checking" id="dot2"></div><span>TAG-Server</span></div>
-    <div class="server-dot"><div class="dot checking" id="dot3"></div><span>AbrÃ¤umer-Server</span></div>
+    <div class="server-dot"><div class="dot checking" id="dot1"></div><span>SKU</span></div>
+    <div class="server-dot"><div class="dot checking" id="dot2"></div><span>TAG</span></div>
+    <div class="server-dot"><div class="dot checking" id="dot3"></div><span>AbrÃ¤umer</span></div>
   </div>
   <button class="wake-btn" id="wakeBtn" onclick="wakeAll()">âš¡ Alle aufwecken</button>
 </div>
@@ -340,6 +294,25 @@
   const LABELS = ['SKU-PICKS', 'TAG-PICKS', 'ABRÃ„UMER'];
   const COLORS = ['', 'c2', 'c3'];
 
+  // Ping mit Wiederholungsversuchen â€“ bis zu 3 Minuten warten
+  async function pingWithRetry(serverIndex, maxAttempts = 6) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const res = await fetch(SERVERS[serverIndex] + '/ping', {
+          signal: AbortSignal.timeout(30000)
+        });
+        const data = await res.json();
+        if (data.status === 'alive') return true;
+      } catch {
+        // Server noch nicht bereit, nochmal versuchen
+      }
+      if (attempt < maxAttempts) {
+        await new Promise(r => setTimeout(r, 10000)); // 10 Sekunden warten
+      }
+    }
+    return false;
+  }
+
   async function checkStatus(i) {
     const dot = document.getElementById('dot' + (i+1));
     dot.className = 'dot checking';
@@ -347,42 +320,40 @@
       const res = await fetch(SERVERS[i] + '/ping', { signal: AbortSignal.timeout(8000) });
       const data = await res.json();
       dot.className = data.status === 'alive' ? 'dot online' : 'dot offline';
-    } catch { dot.className = 'dot offline'; }
+    } catch {
+      dot.className = 'dot offline';
+    }
   }
 
   async function wakeAll() {
     const btn = document.getElementById('wakeBtn');
     btn.disabled = true;
-    btn.textContent = 'â³ Aufwecken...';
+    btn.textContent = 'â³ LÃ¤uft...';
 
-    const box = document.getElementById('resultBox');
     document.getElementById('resultDot').className = 'dot checking';
     document.getElementById('resultTitle').textContent = 'SERVER AUFWECKEN';
     document.getElementById('resultSummary').innerHTML = '';
-    document.getElementById('resultDetails').innerHTML = '<div class="wake-result" id="wakeLog">â³ Verbinde mit Servern...</div>';
+    document.getElementById('resultDetails').innerHTML = '<div class="wake-result" id="wakeLog">â³ Starte Aufweckvorgang...<br><small style="color:var(--muted)">Render Free Server brauchen bis zu 3 Minuten</small></div>';
     document.getElementById('resultTime').textContent = '';
-    box.className = 'result-box visible';
+    document.getElementById('resultBox').className = 'result-box visible';
 
     const log = document.getElementById('wakeLog');
     const results = [];
 
     for (let i = 0; i < 3; i++) {
-      log.innerHTML += '<br>ðŸ”„ ' + LABELS[i] + '-Server wird aufgeweckt...';
-      try {
-        const res = await fetch(SERVERS[i] + '/ping', { signal: AbortSignal.timeout(60000) });
-        const data = await res.json();
-        if (data.status === 'alive') {
-          log.innerHTML += ' âœ… Online!';
-          document.getElementById('dot' + (i+1)).className = 'dot online';
-          results.push(true);
-        } else {
-          log.innerHTML += ' âŒ Fehler';
-          document.getElementById('dot' + (i+1)).className = 'dot offline';
-          results.push(false);
-        }
-      } catch {
-        log.innerHTML += ' âŒ Timeout';
-        document.getElementById('dot' + (i+1)).className = 'dot offline';
+      const dot = document.getElementById('dot' + (i+1));
+      dot.className = 'dot checking';
+      log.innerHTML += '<br><br>ðŸ”„ <strong>' + LABELS[i] + '</strong> wird aufgeweckt...';
+
+      const ok = await pingWithRetry(i);
+
+      if (ok) {
+        log.innerHTML += ' âœ… Online!';
+        dot.className = 'dot online';
+        results.push(true);
+      } else {
+        log.innerHTML += ' âŒ Nicht erreichbar';
+        dot.className = 'dot offline';
         results.push(false);
       }
     }
@@ -390,8 +361,8 @@
     const allOk = results.every(r => r);
     document.getElementById('resultDot').className = allOk ? 'dot online' : 'dot offline';
     log.innerHTML += allOk
-      ? '<br><br>ðŸš€ <strong>Alle Server bereit!</strong>'
-      : '<br><br>âš ï¸ Nicht alle Server konnten aufgeweckt werden.';
+      ? '<br><br>ðŸš€ <strong>Alle Server bereit! Picks kÃ¶nnen gestartet werden.</strong>'
+      : '<br><br>âš ï¸ Nicht alle Server konnten aufgeweckt werden. Bitte nochmal versuchen.';
 
     document.getElementById('resultTime').textContent = 'â± ' + new Date().toLocaleString('de-DE');
     btn.disabled = false;
@@ -402,11 +373,11 @@
     const btn = document.getElementById('btn' + type);
     btn.classList.add('loading');
     try {
-      const res = await fetch(SERVERS[type-1] + '/run', { signal: AbortSignal.timeout(60000) });
+      const res = await fetch(SERVERS[type-1] + '/run', { signal: AbortSignal.timeout(120000) });
       const data = await res.json();
       showResult(data, LABELS[type-1], COLORS[type-1]);
     } catch(e) {
-      showError(LABELS[type-1], e.message.includes('timeout') ? 'Server schlÃ¤ft noch â€“ bitte aufwecken!' : e.message);
+      showError(LABELS[type-1], 'Server schlÃ¤ft noch â€“ bitte zuerst âš¡ Aufwecken drÃ¼cken!');
     } finally {
       btn.classList.remove('loading');
     }
@@ -440,6 +411,7 @@
     document.getElementById('resultBox').className = 'result-box visible';
   }
 
+  // Status beim Laden prÃ¼fen
   [0,1,2].forEach(i => checkStatus(i));
 </script>
 </body>
