@@ -2,8 +2,9 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pulpo Pick Manager Â· tier123</title>
+<title>Pulpo Pick Manager - tier123</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -72,21 +73,11 @@
   }
 
   .status-servers { display: flex; gap: 16px; flex-wrap: wrap; }
-
-  .server-dot {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
+  .server-dot { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .dot.offline { background: var(--red); }
   .dot.checking { background: var(--yellow); animation: pulse 1s infinite; }
-
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
   .wake-btn {
@@ -102,18 +93,10 @@
     transition: all 0.2s;
     white-space: nowrap;
   }
-
   .wake-btn:hover { border-color: var(--accent2); background: rgba(78,205,196,0.08); }
   .wake-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    max-width: 700px;
-    margin: 0 auto 24px;
-  }
-
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; max-width: 700px; margin: 0 auto 24px; }
   @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 
   .btn {
@@ -126,24 +109,20 @@
     text-align: center;
     overflow: hidden;
   }
-
   .btn:active { transform: scale(0.97); }
   .btn-1 { border-top: 3px solid var(--accent1); }
   .btn-2 { border-top: 3px solid var(--accent2); }
   .btn-3 { border-top: 3px solid var(--accent3); }
-
   .btn:hover { transform: translateY(-2px); }
   .btn-1:hover { box-shadow: 0 8px 30px rgba(255,107,53,0.15); }
   .btn-2:hover { box-shadow: 0 8px 30px rgba(78,205,196,0.15); }
   .btn-3:hover { box-shadow: 0 8px 30px rgba(167,139,250,0.15); }
 
   .btn-icon { font-size: 1.8rem; margin-bottom: 10px; }
-
   .btn-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; }
   .btn-1 .btn-title { color: var(--accent1); }
   .btn-2 .btn-title { color: var(--accent2); }
   .btn-3 .btn-title { color: var(--accent3); }
-
   .btn-desc { color: var(--muted); font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.6; }
   .btn.loading { opacity: 0.6; pointer-events: none; }
 
@@ -156,7 +135,6 @@
     animation: spin 0.8s linear infinite;
     margin: 8px auto 0;
   }
-
   .btn.loading .spinner { display: block; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -169,28 +147,13 @@
     overflow: hidden;
     display: none;
   }
-
   .result-box.visible { display: block; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  .result-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
+  .result-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
   .result-title { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; }
 
-  .result-summary {
-    padding: 18px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .result-summary { padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-bottom: 1px solid var(--border); }
   .stat { background: var(--bg); border-radius: 10px; padding: 12px; text-align: center; }
   .stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--accent1); }
   .stat-num.c2 { color: var(--accent2); }
@@ -198,30 +161,12 @@
   .stat-label { color: var(--muted); font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
   .result-details { padding: 14px 18px; max-height: 280px; overflow-y: auto; }
-
-  .pick-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.72rem;
-  }
-
+  .pick-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.72rem; }
   .pick-item:last-child { border-bottom: none; }
-
-  .pick-badge {
-    background: var(--bg);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 0.62rem;
-    color: var(--accent2);
-    border: 1px solid var(--border);
-  }
+  .pick-badge { background: var(--bg); border-radius: 6px; padding: 3px 10px; font-size: 0.62rem; color: var(--accent2); border: 1px solid var(--border); }
 
   .error-msg { padding: 18px; color: var(--red); font-size: 0.72rem; line-height: 1.6; }
   .wake-result { padding: 14px 18px; font-size: 0.7rem; line-height: 2; color: var(--text); }
-
   .timestamp { padding: 9px 18px; color: var(--muted); font-size: 0.58rem; letter-spacing: 1px; border-top: 1px solid var(--border); }
 
   footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; }
@@ -238,35 +183,35 @@
     <div class="logo-fallback">tier123.de</div>
   </div>
   <h1>PULPO PICKS</h1>
-  <p>Pick Manager Â· Warehouse Automation</p>
+  <p>Pick Manager &middot; Warehouse Automation</p>
 </header>
 
 <div class="status-bar">
   <div class="status-servers">
     <div class="server-dot"><div class="dot checking" id="dot1"></div><span>SKU</span></div>
     <div class="server-dot"><div class="dot checking" id="dot2"></div><span>TAG</span></div>
-    <div class="server-dot"><div class="dot checking" id="dot3"></div><span>AbrÃ¤umer</span></div>
+    <div class="server-dot"><div class="dot checking" id="dot3"></div><span>Abr&auml;umer</span></div>
   </div>
-  <button class="wake-btn" id="wakeBtn" onclick="wakeAll()">âš¡ Alle aufwecken</button>
+  <button class="wake-btn" id="wakeBtn" onclick="wakeAll()">Alle aufwecken</button>
 </div>
 
 <div class="grid">
   <button class="btn btn-1" id="btn1" onclick="triggerPick(1)">
-    <div class="btn-icon">ðŸ“¦</div>
+    <div class="btn-icon">&#128230;</div>
     <div class="btn-title">SKU-PICKS</div>
-    <div class="btn-desc">Nach SKU<br>Min 4 Â· Max 16</div>
+    <div class="btn-desc">Nach SKU<br>Min 4 &middot; Max 16</div>
     <div class="spinner"></div>
   </button>
   <button class="btn btn-2" id="btn2" onclick="triggerPick(2)">
-    <div class="btn-icon">ðŸ·ï¸</div>
+    <div class="btn-icon">&#127991;</div>
     <div class="btn-title">TAG-PICKS</div>
-    <div class="btn-desc">Nach Kategorie<br>Min 4 Â· Max 8</div>
+    <div class="btn-desc">Nach Kategorie<br>Min 4 &middot; Max 8</div>
     <div class="spinner"></div>
   </button>
   <button class="btn btn-3" id="btn3" onclick="triggerPick(3)">
-    <div class="btn-icon">ðŸ§¹</div>
-    <div class="btn-title">ABRÃ„UMER</div>
-    <div class="btn-desc">Reste picken<br>Min 4 Â· Max 6</div>
+    <div class="btn-icon">&#127923;</div>
+    <div class="btn-title">ABR&Auml;UMER</div>
+    <div class="btn-desc">Reste picken<br>Min 4 &middot; Max 6</div>
     <div class="spinner"></div>
   </button>
 </div>
@@ -282,137 +227,132 @@
 </div>
 
 <footer>
-  <p>Created by <span>Uli Knaup</span> Â· tier123.de Â· Pulpo WMS Automation</p>
+  <p>Created by <span>Uli Knaup</span> &middot; tier123.de &middot; Pulpo WMS Automation</p>
 </footer>
 
 <script>
-  const SERVERS = [
+  var SERVERS = [
     'https://pulpo-automation.onrender.com',
     'https://pulpo-automation-2.onrender.com',
     'https://pulpo-automation-3.onrender.com'
   ];
-  const LABELS = ['SKU-PICKS', 'TAG-PICKS', 'ABRÃ„UMER'];
-  const COLORS = ['', 'c2', 'c3'];
+  var LABELS = ['SKU-PICKS', 'TAG-PICKS', 'ABRAEUMER'];
+  var COLORS = ['', 'c2', 'c3'];
 
-  // Ping mit Wiederholungsversuchen â€“ bis zu 3 Minuten warten
-  async function pingWithRetry(serverIndex, maxAttempts = 6) {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  async function pingWithRetry(idx, maxAttempts) {
+    maxAttempts = maxAttempts || 6;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const res = await fetch(SERVERS[serverIndex] + '/ping', {
-          signal: AbortSignal.timeout(30000)
-        });
-        const data = await res.json();
+        var res = await fetch(SERVERS[idx] + '/ping', { signal: AbortSignal.timeout(30000) });
+        var data = await res.json();
         if (data.status === 'alive') return true;
-      } catch {
-        // Server noch nicht bereit, nochmal versuchen
-      }
+      } catch(e) {}
       if (attempt < maxAttempts) {
-        await new Promise(r => setTimeout(r, 10000)); // 10 Sekunden warten
+        await new Promise(function(r){ setTimeout(r, 10000); });
       }
     }
     return false;
   }
 
   async function checkStatus(i) {
-    const dot = document.getElementById('dot' + (i+1));
+    var dot = document.getElementById('dot' + (i+1));
     dot.className = 'dot checking';
     try {
-      const res = await fetch(SERVERS[i] + '/ping', { signal: AbortSignal.timeout(8000) });
-      const data = await res.json();
+      var res = await fetch(SERVERS[i] + '/ping', { signal: AbortSignal.timeout(8000) });
+      var data = await res.json();
       dot.className = data.status === 'alive' ? 'dot online' : 'dot offline';
-    } catch {
+    } catch(e) {
       dot.className = 'dot offline';
     }
   }
 
   async function wakeAll() {
-    const btn = document.getElementById('wakeBtn');
+    var btn = document.getElementById('wakeBtn');
     btn.disabled = true;
-    btn.textContent = 'â³ LÃ¤uft...';
+    btn.textContent = 'Laeuft...';
 
     document.getElementById('resultDot').className = 'dot checking';
     document.getElementById('resultTitle').textContent = 'SERVER AUFWECKEN';
     document.getElementById('resultSummary').innerHTML = '';
-    document.getElementById('resultDetails').innerHTML = '<div class="wake-result" id="wakeLog">â³ Starte Aufweckvorgang...<br><small style="color:var(--muted)">Render Free Server brauchen bis zu 3 Minuten</small></div>';
+    document.getElementById('resultDetails').innerHTML = '<div class="wake-result" id="wakeLog">Starte Aufweckvorgang...<br><small style="color:var(--muted)">Render Free Server brauchen bis zu 3 Minuten</small></div>';
     document.getElementById('resultTime').textContent = '';
     document.getElementById('resultBox').className = 'result-box visible';
 
-    const log = document.getElementById('wakeLog');
-    const results = [];
+    var log = document.getElementById('wakeLog');
+    var results = [];
 
-    for (let i = 0; i < 3; i++) {
-      const dot = document.getElementById('dot' + (i+1));
-      dot.className = 'dot checking';
-      log.innerHTML += '<br><br>ðŸ”„ <strong>' + LABELS[i] + '</strong> wird aufgeweckt...';
-
-      const ok = await pingWithRetry(i);
-
+    for (var i = 0; i < 3; i++) {
+      document.getElementById('dot' + (i+1)).className = 'dot checking';
+      log.innerHTML += '<br><br>' + LABELS[i] + ' wird aufgeweckt...';
+      var ok = await pingWithRetry(i);
       if (ok) {
-        log.innerHTML += ' âœ… Online!';
-        dot.className = 'dot online';
+        log.innerHTML += ' [ONLINE]';
+        document.getElementById('dot' + (i+1)).className = 'dot online';
         results.push(true);
       } else {
-        log.innerHTML += ' âŒ Nicht erreichbar';
-        dot.className = 'dot offline';
+        log.innerHTML += ' [FEHLER]';
+        document.getElementById('dot' + (i+1)).className = 'dot offline';
         results.push(false);
       }
     }
 
-    const allOk = results.every(r => r);
+    var allOk = results.every(function(r){ return r; });
     document.getElementById('resultDot').className = allOk ? 'dot online' : 'dot offline';
     log.innerHTML += allOk
-      ? '<br><br>ðŸš€ <strong>Alle Server bereit! Picks kÃ¶nnen gestartet werden.</strong>'
-      : '<br><br>âš ï¸ Nicht alle Server konnten aufgeweckt werden. Bitte nochmal versuchen.';
+      ? '<br><br><strong>Alle Server bereit! Picks koennen gestartet werden.</strong>'
+      : '<br><br>Nicht alle Server konnten aufgeweckt werden. Bitte nochmal versuchen.';
 
-    document.getElementById('resultTime').textContent = 'â± ' + new Date().toLocaleString('de-DE');
+    document.getElementById('resultTime').textContent = new Date().toLocaleString('de-DE');
     btn.disabled = false;
-    btn.textContent = 'âš¡ Alle aufwecken';
+    btn.textContent = 'Alle aufwecken';
   }
 
   async function triggerPick(type) {
-    const btn = document.getElementById('btn' + type);
+    var btn = document.getElementById('btn' + type);
     btn.classList.add('loading');
     try {
-      const res = await fetch(SERVERS[type-1] + '/run', { signal: AbortSignal.timeout(120000) });
-      const data = await res.json();
+      var res = await fetch(SERVERS[type-1] + '/run', { signal: AbortSignal.timeout(120000) });
+      var data = await res.json();
       showResult(data, LABELS[type-1], COLORS[type-1]);
     } catch(e) {
-      showError(LABELS[type-1], 'Server schlÃ¤ft noch â€“ bitte zuerst âš¡ Aufwecken drÃ¼cken!');
-    } finally {
-      btn.classList.remove('loading');
+      showError(LABELS[type-1], 'Server schlaeft noch - bitte zuerst Aufwecken druecken!');
     }
+    btn.classList.remove('loading');
   }
 
   function showResult(data, label, color) {
     document.getElementById('resultDot').className = 'dot online';
-    document.getElementById('resultTitle').textContent = label + ' â€” ERGEBNIS';
-    document.getElementById('resultSummary').innerHTML = `
-      <div class="result-summary">
-        <div class="stat"><div class="stat-num ${color}">${data.groups_created||0}</div><div class="stat-label">Pick-AuftrÃ¤ge erstellt</div></div>
-        <div class="stat"><div class="stat-num">${data.total_orders||0}</div><div class="stat-label">AuftrÃ¤ge in Queue</div></div>
-      </div>`;
+    document.getElementById('resultTitle').textContent = label + ' - ERGEBNIS';
+    document.getElementById('resultSummary').innerHTML =
+      '<div class="result-summary">' +
+      '<div class="stat"><div class="stat-num ' + color + '">' + (data.groups_created||0) + '</div><div class="stat-label">Pick-Auftraege erstellt</div></div>' +
+      '<div class="stat"><div class="stat-num">' + (data.total_orders||0) + '</div><div class="stat-label">Auftraege in Queue</div></div>' +
+      '</div>';
     if (data.details && data.details.length > 0) {
-      document.getElementById('resultDetails').innerHTML = '<div class="result-details">' +
-        data.details.map((d,i) => `<div class="pick-item"><span>Pick ${i+1}${d.tag?' Â· '+d.tag:''}</span><span class="pick-badge">${d.count} AuftrÃ¤ge</span></div>`).join('') +
-        '</div>';
+      var html = '<div class="result-details">';
+      for (var i = 0; i < data.details.length; i++) {
+        var d = data.details[i];
+        html += '<div class="pick-item"><span>Pick ' + (i+1) + (d.tag ? ' - ' + d.tag : '') + '</span><span class="pick-badge">' + d.count + ' Auftraege</span></div>';
+      }
+      html += '</div>';
+      document.getElementById('resultDetails').innerHTML = html;
     } else {
-      document.getElementById('resultDetails').innerHTML = '<div class="result-details"><div class="pick-item" style="color:var(--muted)">Keine Picks erstellt â€“ zu wenig AuftrÃ¤ge</div></div>';
+      document.getElementById('resultDetails').innerHTML = '<div class="result-details"><div class="pick-item" style="color:var(--muted)">Keine Picks erstellt - zu wenig Auftraege</div></div>';
     }
-    document.getElementById('resultTime').textContent = 'â± ' + new Date().toLocaleString('de-DE');
+    document.getElementById('resultTime').textContent = new Date().toLocaleString('de-DE');
     document.getElementById('resultBox').className = 'result-box visible';
   }
 
   function showError(label, msg) {
     document.getElementById('resultDot').className = 'dot offline';
-    document.getElementById('resultTitle').textContent = label + ' â€” FEHLER';
+    document.getElementById('resultTitle').textContent = label + ' - FEHLER';
     document.getElementById('resultSummary').innerHTML = '';
-    document.getElementById('resultDetails').innerHTML = '<div class="error-msg">âš ï¸ ' + msg + '</div>';
-    document.getElementById('resultTime').textContent = 'â± ' + new Date().toLocaleString('de-DE');
+    document.getElementById('resultDetails').innerHTML = '<div class="error-msg">' + msg + '</div>';
+    document.getElementById('resultTime').textContent = new Date().toLocaleString('de-DE');
     document.getElementById('resultBox').className = 'result-box visible';
   }
 
-  // Status beim Laden prÃ¼fen
-  [0,1,2].forEach(i => checkStatus(i));
+  [0,1,2].forEach(function(i){ checkStatus(i); });
 </script>
 </body>
 </html>
