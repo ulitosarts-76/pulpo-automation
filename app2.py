@@ -92,6 +92,7 @@ def create_picks(token, group):
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
+
     body = {
         "fulfillment_orders": group,
         "cart": False,
@@ -99,10 +100,24 @@ def create_picks(token, group):
         "delete_missing_stock_sales_items": True,
         "pickers": []
     }
+
     r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-        json=body,
-        headers=headers)
-    return {"status": r.status_code, "response": r.json()}
+        json=body, headers=headers)
+    result = r.json()
+
+    # Falls Fehler → fehlgeschlagene Aufträge entfernen und nochmal versuchen
+    if r.status_code == 422:
+        errors = result.get("errors", {})
+        failed_ids = [f["id"] for f in errors.get("failed_fulfillment_orders", [])]
+        if failed_ids:
+            clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
+            if len(clean_group) >= MIN_GROUP_SIZE:
+                body["fulfillment_orders"] = clean_group
+                r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
+                    json=body, headers=headers)
+                result = r.json()
+
+    return {"status": r.status_code, "response": result}
 
 @app.route("/ping", methods=["GET"])
 def ping():
