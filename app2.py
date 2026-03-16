@@ -58,7 +58,7 @@ def group_by_tag(orders):
             continue
         single_sku_orders.append(order)
 
-    # Gruppieren nach Tag – OHNE SKU-Zahl-Prüfung
+    # Gruppieren nach Tag
     tag_groups = {}
     for order in single_sku_orders:
         tag = get_tag(order)
@@ -96,7 +96,7 @@ def create_picks(token, group):
         "fulfillment_orders": group,
         "cart": False,
         "notes": "",
-        "delete_missing_stock_sales_items": False,
+        "delete_missing_stock_sales_items": True,
         "pickers": []
     }
     r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
