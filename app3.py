@@ -46,7 +46,6 @@ def get_tag(order):
     return None
 
 def get_abraeumer_orders(orders):
-    # Nur 1-SKU Aufträge
     single_sku_orders = []
     for order in orders:
         items = order.get("items", [])
@@ -57,13 +56,11 @@ def get_abraeumer_orders(orders):
             continue
         single_sku_orders.append(order)
 
-    # Zähle Aufträge pro SKU
     sku_count = {}
     for order in single_sku_orders:
         product_id = str(order["items"][0].get("product_id", ""))
         sku_count[product_id] = sku_count.get(product_id, 0) + 1
 
-    # Zähle Aufträge pro Tag (nur SKUs mit < 4)
     tag_count = {}
     for order in single_sku_orders:
         product_id = str(order["items"][0].get("product_id", ""))
@@ -73,32 +70,22 @@ def get_abraeumer_orders(orders):
         if tag:
             tag_count[tag] = tag_count.get(tag, 0) + 1
 
-    # Abräumer: SKU < 4 UND (kein Tag ODER Tag-Gruppe < 4)
     fo_ids = []
     for order in single_sku_orders:
         product_id = str(order["items"][0].get("product_id", ""))
-
-        # Webhook 1 hätte es gepickt → überspringen
         if sku_count[product_id] >= 4:
             continue
-
         tag = get_tag(order)
-
-        # Webhook 2 hätte es gepickt → überspringen
         if tag and tag_count.get(tag, 0) >= 4:
             continue
-
-        # Übrig → Abräumer nimmt es
         fo_id = order["fulfillment_orders"][0]["id"]
         fo_ids.append(fo_id)
 
-    # Batches à max 6, minimum 4
     result = []
     for i in range(0, len(fo_ids), MAX_GROUP_SIZE):
         batch = fo_ids[i:i+MAX_GROUP_SIZE]
         if len(batch) >= MIN_GROUP_SIZE:
             result.append(batch)
-        # Rest unter 4 → nicht anfassen
 
     return result
 
@@ -111,13 +98,25 @@ def create_picks(token, group):
         "fulfillment_orders": group,
         "cart": False,
         "notes": "",
-        "delete_missing_stock_sales_items": False,
+        "delete_missing_stock_sales_items": True,
         "pickers": []
     }
     r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-        json=body,
-        headers=headers)
-    return {"status": r.status_code, "response": r.json()}
+        json=body, headers=headers)
+    result = r.json()
+
+    if r.status_code == 422:
+        errors = result.get("errors", {})
+        failed_ids = [f["id"] for f in errors.get("failed_fulfillment_orders", [])]
+        if failed_ids:
+            clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
+            if len(clean_group) >= MIN_GROUP_SIZE:
+                body["fulfillment_orders"] = clean_group
+                r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
+                    json=body, headers=headers)
+                result = r.json()
+
+    return {"status": r.status_code, "response": result}
 
 @app.route("/ping", methods=["GET"])
 def ping():
