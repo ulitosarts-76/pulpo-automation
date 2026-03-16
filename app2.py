@@ -27,10 +27,7 @@ def get_token():
 def get_queue_orders(token):
     headers = {"Authorization": f"Bearer {token}"}
     r = requests.get(f"{PULPO_BASE_URL}/sales/orders",
-        params={
-            "state": "queue",
-            "limit": 200
-        },
+        params={"state": "queue", "limit": 200},
         headers=headers)
     return r.json().get("sales_orders", [])
 
@@ -50,6 +47,7 @@ def get_tag(order):
     return None
 
 def group_by_tag(orders):
+    # Nur 1-SKU Aufträge
     single_sku_orders = []
     for order in orders:
         items = order.get("items", [])
@@ -60,26 +58,18 @@ def group_by_tag(orders):
             continue
         single_sku_orders.append(order)
 
-    sku_count = {}
-    for order in single_sku_orders:
-        product_id = str(order["items"][0].get("product_id", ""))
-        sku_count[product_id] = sku_count.get(product_id, 0) + 1
-
+    # Gruppieren nach Tag – OHNE SKU-Zahl-Prüfung
     tag_groups = {}
     for order in single_sku_orders:
-        product_id = str(order["items"][0].get("product_id", ""))
-        if sku_count[product_id] >= 4:
-            continue
-
         tag = get_tag(order)
         if not tag:
             continue
-
         fo_id = order["fulfillment_orders"][0]["id"]
         if tag not in tag_groups:
             tag_groups[tag] = []
         tag_groups[tag].append(fo_id)
 
+    # Batches bilden
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
@@ -93,6 +83,7 @@ def group_by_tag(orders):
                 if len(batch) >= MIN_GROUP_SIZE:
                     result.append({"tag": tag, "fo_ids": batch})
 
+    # Größte Gruppen zuerst
     result.sort(key=lambda x: len(x["fo_ids"]), reverse=True)
     return result
 
