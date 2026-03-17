@@ -14,6 +14,8 @@
     --accent1: #ff6b35;
     --accent2: #4ecdc4;
     --accent3: #a78bfa;
+    --accent4: #f7c948;
+    --accent5: #ff4d8f;
     --text: #f0f0f5;
     --muted: #6b6b80;
     --green: #2ecc71;
@@ -59,7 +61,7 @@
   header p { color: var(--muted); font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; }
 
   .status-bar {
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto 20px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -72,8 +74,8 @@
     flex-wrap: wrap;
   }
 
-  .status-servers { display: flex; gap: 16px; flex-wrap: wrap; }
-  .server-dot { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; }
+  .status-servers { display: flex; gap: 14px; flex-wrap: wrap; }
+  .server-dot { display: flex; align-items: center; gap: 6px; font-size: 0.62rem; color: var(--muted); letter-spacing: 1px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .dot.offline { background: var(--red); }
@@ -96,14 +98,33 @@
   .wake-btn:hover { border-color: var(--accent2); background: rgba(78,205,196,0.08); }
   .wake-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; max-width: 700px; margin: 0 auto 24px; }
-  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  /* 1-SKU Sektion */
+  .section-label {
+    max-width: 800px;
+    margin: 0 auto 10px;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-left: 4px;
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    max-width: 800px;
+    margin: 0 auto 24px;
+  }
+
+  @media (max-width: 700px) { .grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 400px) { .grid-4 { grid-template-columns: 1fr; } }
 
   .btn {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 24px 16px;
+    padding: 22px 14px;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
@@ -112,34 +133,39 @@
   .btn:active { transform: scale(0.97); }
   .btn-1 { border-top: 3px solid var(--accent1); }
   .btn-2 { border-top: 3px solid var(--accent2); }
+  .btn-21 { border-top: 3px solid var(--accent4); }
   .btn-3 { border-top: 3px solid var(--accent3); }
+
   .btn:hover { transform: translateY(-2px); }
   .btn-1:hover { box-shadow: 0 8px 30px rgba(255,107,53,0.15); }
   .btn-2:hover { box-shadow: 0 8px 30px rgba(78,205,196,0.15); }
+  .btn-21:hover { box-shadow: 0 8px 30px rgba(247,201,72,0.15); }
   .btn-3:hover { box-shadow: 0 8px 30px rgba(167,139,250,0.15); }
 
-  .btn-icon { font-size: 1.8rem; margin-bottom: 10px; }
-  .btn-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; }
+  .btn-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .btn-title { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; }
   .btn-1 .btn-title { color: var(--accent1); }
   .btn-2 .btn-title { color: var(--accent2); }
+  .btn-21 .btn-title { color: var(--accent4); }
   .btn-3 .btn-title { color: var(--accent3); }
-  .btn-desc { color: var(--muted); font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.6; }
+
+  .btn-desc { color: var(--muted); font-size: 0.57rem; letter-spacing: 0.5px; line-height: 1.6; }
   .btn.loading { opacity: 0.6; pointer-events: none; }
 
   .spinner {
     display: none;
-    width: 18px; height: 18px;
+    width: 16px; height: 16px;
     border: 2px solid var(--border);
     border-top-color: var(--accent1);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    margin: 8px auto 0;
+    margin: 6px auto 0;
   }
   .btn.loading .spinner { display: block; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .result-box {
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -158,6 +184,7 @@
   .stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--accent1); }
   .stat-num.c2 { color: var(--accent2); }
   .stat-num.c3 { color: var(--accent3); }
+  .stat-num.c4 { color: var(--accent4); }
   .stat-label { color: var(--muted); font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
   .result-details { padding: 14px 18px; max-height: 280px; overflow-y: auto; }
@@ -190,12 +217,14 @@
   <div class="status-servers">
     <div class="server-dot"><div class="dot checking" id="dot1"></div><span>SKU</span></div>
     <div class="server-dot"><div class="dot checking" id="dot2"></div><span>TAG</span></div>
-    <div class="server-dot"><div class="dot checking" id="dot3"></div><span>Abr&auml;umer</span></div>
+    <div class="server-dot"><div class="dot checking" id="dot3"></div><span>GRUPPEN</span></div>
+    <div class="server-dot"><div class="dot checking" id="dot4"></div><span>Abr&auml;umer</span></div>
   </div>
   <button class="wake-btn" id="wakeBtn" onclick="wakeAll()">Alle aufwecken</button>
 </div>
 
-<div class="grid">
+<div class="section-label">1-SKU Auftr&auml;ge</div>
+<div class="grid-4">
   <button class="btn btn-1" id="btn1" onclick="triggerPick(1)">
     <div class="btn-icon">&#128230;</div>
     <div class="btn-title">SKU-PICKS</div>
@@ -205,10 +234,16 @@
   <button class="btn btn-2" id="btn2" onclick="triggerPick(2)">
     <div class="btn-icon">&#127991;</div>
     <div class="btn-title">TAG-PICKS</div>
-    <div class="btn-desc">Nach Kategorie<br>Min 4 &middot; Max 8</div>
+    <div class="btn-desc">Nach Tag<br>Min 4 &middot; Max 8</div>
     <div class="spinner"></div>
   </button>
-  <button class="btn btn-3" id="btn3" onclick="triggerPick(3)">
+  <button class="btn btn-21" id="btn3" onclick="triggerPick(3)">
+    <div class="btn-icon">&#127968;</div>
+    <div class="btn-title">GRUPPEN-PICKS</div>
+    <div class="btn-desc">Gruppe A &amp; B<br>Min 4 &middot; Max 8</div>
+    <div class="spinner"></div>
+  </button>
+  <button class="btn btn-3" id="btn4" onclick="triggerPick(4)">
     <div class="btn-icon">&#127923;</div>
     <div class="btn-title">ABR&Auml;UMER</div>
     <div class="btn-desc">Reste picken<br>Min 4 &middot; Max 6</div>
@@ -234,10 +269,11 @@
   var SERVERS = [
     'https://pulpo-automation.onrender.com',
     'https://pulpo-automation-2.onrender.com',
+    'https://pulpo-automation-2-1.onrender.com',
     'https://pulpo-automation-3.onrender.com'
   ];
-  var LABELS = ['SKU-PICKS', 'TAG-PICKS', 'ABRAEUMER'];
-  var COLORS = ['', 'c2', 'c3'];
+  var LABELS = ['SKU-PICKS', 'TAG-PICKS', 'GRUPPEN-PICKS', 'ABRAEUMER'];
+  var COLORS = ['', 'c2', 'c4', 'c3'];
 
   async function pingWithRetry(idx, maxAttempts) {
     maxAttempts = maxAttempts || 6;
@@ -281,7 +317,7 @@
     var log = document.getElementById('wakeLog');
     var results = [];
 
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 4; i++) {
       document.getElementById('dot' + (i+1)).className = 'dot checking';
       log.innerHTML += '<br><br>' + LABELS[i] + ' wird aufgeweckt...';
       var ok = await pingWithRetry(i);
@@ -299,8 +335,8 @@
     var allOk = results.every(function(r){ return r; });
     document.getElementById('resultDot').className = allOk ? 'dot online' : 'dot offline';
     log.innerHTML += allOk
-      ? '<br><br><strong>Alle Server bereit! Picks koennen gestartet werden.</strong>'
-      : '<br><br>Nicht alle Server konnten aufgeweckt werden. Bitte nochmal versuchen.';
+      ? '<br><br><strong>Alle Server bereit!</strong>'
+      : '<br><br>Nicht alle Server konnten aufgeweckt werden.';
 
     document.getElementById('resultTime').textContent = new Date().toLocaleString('de-DE');
     btn.disabled = false;
@@ -332,7 +368,8 @@
       var html = '<div class="result-details">';
       for (var i = 0; i < data.details.length; i++) {
         var d = data.details[i];
-        html += '<div class="pick-item"><span>Pick ' + (i+1) + (d.tag ? ' - ' + d.tag : '') + '</span><span class="pick-badge">' + d.count + ' Auftraege</span></div>';
+        var label_text = d.tag ? ' - ' + d.tag : (d.gruppe ? ' - Gruppe ' + d.gruppe : '');
+        html += '<div class="pick-item"><span>Pick ' + (i+1) + label_text + '</span><span class="pick-badge">' + d.count + ' Auftraege</span></div>';
       }
       html += '</div>';
       document.getElementById('resultDetails').innerHTML = html;
@@ -352,7 +389,7 @@
     document.getElementById('resultBox').className = 'result-box visible';
   }
 
-  [0,1,2].forEach(function(i){ checkStatus(i); });
+  [0,1,2,3].forEach(function(i){ checkStatus(i); });
 </script>
 </body>
 </html>
