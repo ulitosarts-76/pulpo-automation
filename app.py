@@ -81,6 +81,20 @@ def group_by_sku(orders):
     result.sort(key=lambda x: len(x), reverse=True)
     return result
 
+def extract_failed_ids(result):
+    failed_ids = []
+    errors = result.get("errors", {})
+    if isinstance(errors, dict):
+        for f in errors.get("failed_fulfillment_orders", []):
+            failed_ids.append(f["id"])
+    elif isinstance(errors, list):
+        for error in errors:
+            items = error.get("items", [])
+            for item in items:
+                if item and "id" in item:
+                    failed_ids.append(int(item["id"]))
+    return failed_ids
+
 def create_picks(token, group):
     headers = {
         "Authorization": f"Bearer {token}",
@@ -98,8 +112,7 @@ def create_picks(token, group):
     result = r.json()
 
     if r.status_code == 422:
-        errors = result.get("errors", {})
-        failed_ids = [f["id"] for f in errors.get("failed_fulfillment_orders", [])]
+        failed_ids = extract_failed_ids(result)
         if failed_ids:
             clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
             if len(clean_group) >= MIN_GROUP_SIZE:
