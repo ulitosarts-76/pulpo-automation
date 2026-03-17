@@ -47,7 +47,6 @@ def get_tag(order):
     return None
 
 def group_by_tag(orders):
-    # Nur 1-SKU Aufträge
     single_sku_orders = []
     for order in orders:
         items = order.get("items", [])
@@ -58,7 +57,6 @@ def group_by_tag(orders):
             continue
         single_sku_orders.append(order)
 
-    # Gruppieren nach Tag
     tag_groups = {}
     for order in single_sku_orders:
         tag = get_tag(order)
@@ -69,7 +67,6 @@ def group_by_tag(orders):
             tag_groups[tag] = []
         tag_groups[tag].append(fo_id)
 
-    # Batches bilden
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
@@ -143,23 +140,38 @@ def debug():
     token = get_token()
     orders = get_queue_orders(token)
     single_sku = []
+    multi_sku = []
+    no_fo = []
     for order in orders:
         items = order.get("items", [])
-        if len(items) != 1:
-            continue
         fo_list = order.get("fulfillment_orders", [])
         if not fo_list:
+            no_fo.append(order.get("order_num"))
+            continue
+        if len(items) != 1:
+            multi_sku.append({
+                "order_num": order.get("order_num"),
+                "items_count": len(items)
+            })
             continue
         tag = get_tag(order)
         product = items[0].get("product", {})
         single_sku.append({
             "order_num": order.get("order_num"),
-            "product_id": items[0].get("product_id"),
             "sku": product.get("sku"),
             "tag": tag,
+            "items_count": len(items),
+            "fo_count": len(fo_list),
             "categories": product.get("product_categories", [])
         })
-    return jsonify({"total": len(single_sku), "orders": single_sku[:20]})
+    return jsonify({
+        "total": len(orders),
+        "single_sku_count": len(single_sku),
+        "multi_sku_count": len(multi_sku),
+        "no_fo_count": len(no_fo),
+        "single_sku_orders": single_sku[:30],
+        "multi_sku_orders": multi_sku[:10]
+    })
 
 @app.route("/run", methods=["POST", "GET"])
 def run():
