@@ -115,20 +115,29 @@ def create_picks(token, group):
         "delete_missing_stock_sales_items": True,
         "pickers": []
     }
-    r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-        json=body, headers=headers)
-    result = r.json()
 
-    if r.status_code == 422:
-        failed_ids = extract_failed_ids(result)
-        if failed_ids:
-            clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
-            # Abräumer: Minimum 1 beim Retry
-            if len(clean_group) >= 1:
-                body["fulfillment_orders"] = clean_group
-                r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-                    json=body, headers=headers)
-                result = r.json()
+    # Bis zu 5 Versuche – jedes Mal fehlgeschlagene entfernen
+    for attempt in range(5):
+        r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
+            json=body, headers=headers)
+        result = r.json()
+
+        if r.status_code == 201:
+            # Erfolgreich!
+            return {"status": r.status_code, "response": result}
+
+        if r.status_code == 422:
+            failed_ids = extract_failed_ids(result)
+            if failed_ids:
+                clean_group = [fo_id for fo_id in body["fulfillment_orders"]
+                               if fo_id not in failed_ids]
+                if len(clean_group) >= 1:
+                    body["fulfillment_orders"] = clean_group
+                    continue  # Nochmal versuchen
+            # Keine fehlgeschlagenen IDs gefunden → abbrechen
+            break
+        else:
+            break
 
     return {"status": r.status_code, "response": result}
 
