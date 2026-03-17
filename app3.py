@@ -123,7 +123,8 @@ def create_picks(token, group):
         failed_ids = extract_failed_ids(result)
         if failed_ids:
             clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
-            if len(clean_group) >= MIN_GROUP_SIZE:
+            # Abräumer: Minimum 1 beim Retry
+            if len(clean_group) >= 1:
                 body["fulfillment_orders"] = clean_group
                 r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
                     json=body, headers=headers)
