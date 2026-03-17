@@ -47,7 +47,6 @@ def get_tag(order):
     return None
 
 def group_by_tag(orders):
-    # Nur 1-SKU Aufträge
     single_sku_orders = []
     for order in orders:
         items = order.get("items", [])
@@ -58,7 +57,6 @@ def group_by_tag(orders):
             continue
         single_sku_orders.append(order)
 
-    # Gruppieren nach Tag
     tag_groups = {}
     for order in single_sku_orders:
         tag = get_tag(order)
@@ -69,12 +67,10 @@ def group_by_tag(orders):
             tag_groups[tag] = []
         tag_groups[tag].append(fo_id)
 
-    # Batches bilden
     result = []
     for tag, fo_ids in tag_groups.items():
         if len(fo_ids) < MIN_GROUP_SIZE:
             continue
-
         if len(fo_ids) <= ALL_IN_THRESHOLD:
             result.append({"tag": tag, "fo_ids": fo_ids})
         else:
@@ -83,7 +79,6 @@ def group_by_tag(orders):
                 if len(batch) >= MIN_GROUP_SIZE:
                     result.append({"tag": tag, "fo_ids": batch})
 
-    # Größte Gruppen zuerst
     result.sort(key=lambda x: len(x["fo_ids"]), reverse=True)
     return result
 
@@ -92,7 +87,6 @@ def create_picks(token, group):
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-
     body = {
         "fulfillment_orders": group,
         "cart": False,
@@ -100,22 +94,22 @@ def create_picks(token, group):
         "delete_missing_stock_sales_items": True,
         "pickers": []
     }
-
     r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
         json=body, headers=headers)
     result = r.json()
 
-    # Falls Fehler → fehlgeschlagene Aufträge entfernen und nochmal versuchen
     if r.status_code == 422:
         errors = result.get("errors", {})
-        failed_ids = [f["id"] for f in errors.get("failed_fulfillment_orders", [])]
-        if failed_ids:
-            clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
-            if len(clean_group) >= MIN_GROUP_SIZE:
-                body["fulfillment_orders"] = clean_group
-                r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-                    json=body, headers=headers)
-                result = r.json()
+        # errors kann Liste oder Dictionary sein
+        if isinstance(errors, dict):
+            failed_ids = [f["id"] for f in errors.get("failed_fulfillment_orders", [])]
+            if failed_ids:
+                clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
+                if len(clean_group) >= MIN_GROUP_SIZE:
+                    body["fulfillment_orders"] = clean_group
+                    r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
+                        json=body, headers=headers)
+                    result = r.json()
 
     return {"status": r.status_code, "response": result}
 
