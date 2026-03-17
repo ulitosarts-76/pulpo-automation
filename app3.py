@@ -54,6 +54,10 @@ def get_abraeumer_orders(orders):
         fo_list = order.get("fulfillment_orders", [])
         if not fo_list:
             continue
+        # Nur Aufträge mit state = queue
+        fo_state = fo_list[0].get("state", "")
+        if fo_state != "queue":
+            continue
         single_sku_orders.append(order)
 
     sku_count = {}
@@ -116,14 +120,12 @@ def create_picks(token, group):
         "pickers": []
     }
 
-    # Bis zu 5 Versuche – jedes Mal fehlgeschlagene entfernen
     for attempt in range(5):
         r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
             json=body, headers=headers)
         result = r.json()
 
         if r.status_code == 201:
-            # Erfolgreich!
             return {"status": r.status_code, "response": result}
 
         if r.status_code == 422:
@@ -133,8 +135,7 @@ def create_picks(token, group):
                                if fo_id not in failed_ids]
                 if len(clean_group) >= 1:
                     body["fulfillment_orders"] = clean_group
-                    continue  # Nochmal versuchen
-            # Keine fehlgeschlagenen IDs gefunden → abbrechen
+                    continue
             break
         else:
             break
