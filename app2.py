@@ -82,6 +82,26 @@ def group_by_tag(orders):
     result.sort(key=lambda x: len(x["fo_ids"]), reverse=True)
     return result
 
+def extract_failed_ids(result):
+    """Extrahiert fehlgeschlagene IDs aus beiden Fehlerformaten"""
+    failed_ids = []
+    errors = result.get("errors", {})
+
+    # Format 1: errors ist Dictionary
+    if isinstance(errors, dict):
+        for f in errors.get("failed_fulfillment_orders", []):
+            failed_ids.append(f["id"])
+
+    # Format 2: errors ist Liste
+    elif isinstance(errors, list):
+        for error in errors:
+            items = error.get("items", [])
+            for item in items:
+                if item and "id" in item:
+                    failed_ids.append(int(item["id"]))
+
+    return failed_ids
+
 def create_picks(token, group):
     headers = {
         "Authorization": f"Bearer {token}",
@@ -99,17 +119,14 @@ def create_picks(token, group):
     result = r.json()
 
     if r.status_code == 422:
-        errors = result.get("errors", {})
-        # errors kann Liste oder Dictionary sein
-        if isinstance(errors, dict):
-            failed_ids = [f["id"] for f in errors.get("failed_fulfillment_orders", [])]
-            if failed_ids:
-                clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
-                if len(clean_group) >= MIN_GROUP_SIZE:
-                    body["fulfillment_orders"] = clean_group
-                    r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
-                        json=body, headers=headers)
-                    result = r.json()
+        failed_ids = extract_failed_ids(result)
+        if failed_ids:
+            clean_group = [fo_id for fo_id in group if fo_id not in failed_ids]
+            if len(clean_group) >= MIN_GROUP_SIZE:
+                body["fulfillment_orders"] = clean_group
+                r = requests.post(f"{PULPO_BASE_URL}/picking/orders",
+                    json=body, headers=headers)
+                result = r.json()
 
     return {"status": r.status_code, "response": result}
 
